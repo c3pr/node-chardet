@@ -7,7 +7,7 @@ var utf8  = require('./encoding/utf8'),
   sbcs    = require('./encoding/sbcs'),
   iso2022 = require('./encoding/iso2022');
 
-var self = this;
+var chardet = {};
 
 var recognisers = [
   new utf8,
@@ -35,7 +35,7 @@ var recognisers = [
   new sbcs.KOI8_R
 ];
 
-module.exports.detect = function(buffer, opts) {
+chardet.detect = function(buffer, opts) {
 
   // Tally up the byte occurence statistics.
   var fByteStats = [];
@@ -78,7 +78,7 @@ module.exports.detect = function(buffer, opts) {
   }
 };
 
-module.exports.detectFile = function(filepath, opts, cb) {
+chardet.detectFile = function(filepath, opts, cb) {
   if (typeof opts === 'function') {
     cb = opts;
     opts = undefined;
@@ -92,7 +92,7 @@ module.exports.detectFile = function(filepath, opts, cb) {
     }
 
     if (err) return cb(err, null);
-    cb(null, self.detect(buffer, opts));
+    cb(null, chardet.detect(buffer, opts));
   };
 
   if (opts && opts.sampleSize) {
@@ -108,15 +108,17 @@ module.exports.detectFile = function(filepath, opts, cb) {
   fs.readFile(filepath, handler);
 };
 
-module.exports.detectFileSync = function(filepath, opts) {
+chardet.detectFileSync = function(filepath, opts) {
   if (opts && opts.sampleSize) {
     var fd = fs.openSync(filepath, 'r'),
       sample = new Buffer(opts.sampleSize);
 
     fs.readSync(fd, sample, 0, opts.sampleSize);
     fs.closeSync(fd);
-    return self.detect(sample, opts);
+    return chardet.detect(sample, opts);
   }
 
-  return self.detect(fs.readFileSync(filepath), opts);
+  return chardet.detect(fs.readFileSync(filepath), opts);
 };
+
+module.exports = chardet;
